@@ -55,7 +55,7 @@ contract Lottery is VRFV2WrapperConsumerBase,ConfirmedOwner{
      require(msg.sender == admin, "Only admin can call this function");
      _;
     }
-///  create lottery with lotteryb id
+///  create lottery with lottery id
    function createLottery() payable public onlyAdmin {
    
     Lottery memory lottery = Lottery({lotteryId: lotteryId.current(),
@@ -66,13 +66,13 @@ contract Lottery is VRFV2WrapperConsumerBase,ConfirmedOwner{
     lotteryId.increment();
     emit LotteryCreated(lottery.lotteryId);
     }
-
+/// @dev to participate and pusg to array
     function participate(uint256 _lotteryId) public payable {
         Lottery storage lottery = lotteries[_lotteryId];
         require(msg.value >= 0.01 ether,'INVALID AMOUNT!!');
         lottery.participants.push(msg.sender);   
     }
-
+/// declaring winner using request randomness
     function declareWinner(uint256 _lotteryId) public onlyAdmin {
         Lottery storage lottery = lotteries[_lotteryId];
         require(!lottery.isFinished,"Lottery has already declared a winner");
@@ -85,7 +85,7 @@ contract Lottery is VRFV2WrapperConsumerBase,ConfirmedOwner{
          emit RandomnessRequested(requestId,_lotteryId);
         
     }
-/**/ callback VRF function and Submit VRF request by calling the requestRandomness function in the VRFV2WrapperConsumerBase contract. 
+/* callback VRF function and Submit VRF request by calling the requestRandomness function in the VRFV2WrapperConsumerBase contract. */
     function fulfillRandomWords(uint256 requestId, uint256[] memory _randomWords)internal override 
     {
         uint256 _lotteryId = lotteryRandomnessRequest[requestId];
