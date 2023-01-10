@@ -6,10 +6,13 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@chainlink/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol";
 import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-
-contract LotteryGame is VRFV2WrapperConsumerBase,ConfirmedOwner{
+/// @author Solidity Intern spotmies
+/// @title Lottery contract
+contract Lottery is VRFV2WrapperConsumerBase,ConfirmedOwner{
     using Counters for Counters.Counter;
     using SafeMath for uint256;
+    
+/// @dev lottery details stored to retrieve using lotteryid
 
     struct Lottery{
          uint256 lotteryId;
@@ -17,20 +20,30 @@ contract LotteryGame is VRFV2WrapperConsumerBase,ConfirmedOwner{
          address winner;
          bool isFinished;
  }  
+ 
     Counters.Counter private lotteryId;
+    
     mapping(uint256 => Lottery) private lotteries;
     mapping(uint256 => uint256) private lotteryRandomnessRequest;
     mapping(uint256 => uint256) playersCount;
     address private admin;
 
+//// @dev Address of link providing acc addresss
     address linkAddress = 0x326C977E6efc84E512bB9C30f76E30c160eD06FB;
+/// @dev address of wrapper 
     address wrapperAddress = 0x708701a1DfF4f478de54383E49a627eD4852C816;
+/// The maximum amount of gas to pay for completing the callback VRF function.
      uint32 callbackGasLimit = 100000;
+/// The number of block confirmations the VRF service will wait to respond.
      uint16 requestConfirmations = 3;
+/// The number of random numbers to request
      uint32 numWords = 1;
-    
+     
+/// notify when a lottery is created
     event LotteryCreated(uint256);
+/// notify when request for randomness
     event RandomnessRequested(uint256,uint256);
+/// notify when winner declared
     event WinnerDeclared(uint256,uint256,address);
 
     constructor()
@@ -42,7 +55,7 @@ contract LotteryGame is VRFV2WrapperConsumerBase,ConfirmedOwner{
      require(msg.sender == admin, "Only admin can call this function");
      _;
     }
-
+///  create lottery with lotteryb id
    function createLottery() payable public onlyAdmin {
    
     Lottery memory lottery = Lottery({lotteryId: lotteryId.current(),
@@ -72,7 +85,7 @@ contract LotteryGame is VRFV2WrapperConsumerBase,ConfirmedOwner{
          emit RandomnessRequested(requestId,_lotteryId);
         
     }
-
+/**/ callback VRF function and Submit VRF request by calling the requestRandomness function in the VRFV2WrapperConsumerBase contract. 
     function fulfillRandomWords(uint256 requestId, uint256[] memory _randomWords)internal override 
     {
         uint256 _lotteryId = lotteryRandomnessRequest[requestId];
